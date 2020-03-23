@@ -46,7 +46,7 @@ class CarBuySerializer(serializers.Serializer):
         if date.year < 1900:
             date = jdatetime.date(day=date.day, month=date.month, year=date.year).togregorian()
         try:
-            car = CarStock.objects.filter(car__name__iexact=validated_data['name'], date=date)
+            car = CarStock.objects.get(car__name__iexact=validated_data['name'], date=date)
         except CarStock.DoesNotExist as e:
             raise CustomException(detail='There is no {} in {} for sale.'.format(validated_data['name'],
                                                                                  jdatetime.date.fromgregorian(
