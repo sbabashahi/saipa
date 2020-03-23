@@ -1,3 +1,4 @@
+from django.db.models import F, Sum
 from rest_framework import generics
 from rest_framework import decorators
 from rest_framework.exceptions import ValidationError
@@ -82,3 +83,26 @@ class CarBuyView(generics.CreateAPIView):
 
         except ValidationError as e:
             return responses.ErrorResponse(message=e.detail, status=e.status_code).send()
+
+
+@decorators.authentication_classes([JSONWebTokenAuthentication])
+@decorators.permission_classes([IsAuthenticated])
+class CarStockView(generics.RetrieveAPIView):
+    """
+    get:
+
+        pagination using index=0&size=20
+    """
+    serializer_class = car_serializers.CarStockSerializer
+
+    def get(self, request):
+        arguments = parser.parse(request.GET.urlencode())
+
+        size = int(arguments.pop('size', 20))
+        index = int(arguments.pop('index', 0))
+        size = index + size
+        result = Car.objects.annotate(total=Sum('carstock__total'), total_sold=Sum('carstock__total_sold')).\
+            filter(total__gt=F('total_sold'))
+        data = self.get_serializer(result[index:size], many=True).data
+        count = len(result)
+        return responses.SuccessResponse(data=data, index=index, total=count).send()

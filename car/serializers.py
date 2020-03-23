@@ -1,6 +1,4 @@
-import datetime
-
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.db import transaction
 from rest_framework import serializers
 import jdatetime
@@ -37,20 +35,19 @@ class CarStockListSerializer(serializers.Serializer):
 
 class CarBuySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=20, min_length=2)
-    date = serializers.CharField(max_length=10, min_length=8)
     count = serializers.IntegerField(default=1)
 
     @transaction.atomic
     def create(self, validated_data):
-        date = datetime.datetime.strptime(validated_data['date'], '%d/%m/%Y')
-        if date.year < 1900:
-            date = jdatetime.date(day=date.day, month=date.month, year=date.year).togregorian()
         try:
-            car = CarStock.objects.get(car__name__iexact=validated_data['name'], date=date)
+            car = CarStock.objects.filter(car__name__iexact=validated_data['name'],
+                                          total__gt=F('total_sold')).order_by('date')
         except CarStock.DoesNotExist as e:
-            raise CustomException(detail='There is no {} in {} for sale.'.format(validated_data['name'],
-                                                                                 jdatetime.date.fromgregorian(
-                                                                                     date=date).strftime('%d/%m/%Y')))
+            raise CustomException(detail='There is no {} for sale.'.format(validated_data['name']))
+        if car:
+            car = car[0]
+        else:
+            raise CustomException(detail='There is no {} for sale.'.format(validated_data['name']))
         if car.total - car.total_sold < validated_data['count']:
             raise CustomException(detail='There is not enough car left for sale.')
         car.total_sold += validated_data['count']
@@ -58,3 +55,11 @@ class CarBuySerializer(serializers.Serializer):
         sale = CarSold(car_stock=car, user=self.context['request'].user, count=validated_data['count'])
         sale.save()
         return sale
+
+
+class CarStockSerializer(serializers.Serializer):
+    name = serializers.ReadOnlyField()
+
+    def to_representation(self, instance):
+        instance = super().to_representation(instance)
+        return instance
