@@ -156,3 +156,9 @@
         "success": true,
         "index": null,
         "total": null}
+
+JWT Authorization
+
+    set in headet
+    
+        Authorization: JWT YOUR_JWT_TOKEN
