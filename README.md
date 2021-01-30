@@ -166,6 +166,15 @@ JWT Authorization
 DB SETUP
 
     mysql -h 127.0.0.1 -P 3306 -u root -p  # connect to db
+    
     CREATE DATABASE saipa;  # create database
     CREATE USER 'saipa'@'%' IDENTIFIED WITH mysql_native_password BY 'saipapass';   # create user and pass
     GRANT ALL ON saipa.* TO 'saipa'@'%';    # grant access to database
+    
+    OR to grant all privileges:
+    
+        GRANT ALL PRIVILEGES ON *.* TO 'saipa'@'%';
+
+Locust, Performance testing
+
+    locust -f stress_test.py

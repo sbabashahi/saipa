@@ -1,11 +1,11 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 from rest_framework import exceptions
 
 
 class CustomException(exceptions.APIException):
     status_code = 400
-    default_detail = _('Operation failed.')
-    default_code = 'Operation failed.'
+    default_detail = ugettext('Operation failed.')
+    default_code = ugettext('Operation failed.')
 
     def __init__(self, detail=None, code=None):
         super().__init__(detail=detail, code=code)

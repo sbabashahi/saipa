@@ -13,9 +13,6 @@ class CarListSerializer(serializers.Serializer):
     total_sold = serializers.ReadOnlyField()
 
     def to_representation(self, instance):
-        car = instance.carstock_set.aggregate(total=Sum('total'), total_sold=Sum('total_sold'))
-        instance.total = car['total']
-        instance.total_sold = car['total_sold']
         instance = super().to_representation(instance)
         return instance
 
@@ -27,8 +24,8 @@ class CarStockListSerializer(serializers.Serializer):
     total_sold = serializers.ReadOnlyField()
 
     def to_representation(self, instance):
-        instance.name = instance.car.name
-        instance.date = jdatetime.date.fromgregorian(date=instance.date).strftime('%d/%m/%Y')
+        instance['name'] = instance.pop('car__name')
+        instance['date'] = jdatetime.date.fromgregorian(date=instance['date']).strftime('%Y/%m/%d')
         instance = super().to_representation(instance)
         return instance
 
@@ -40,13 +37,9 @@ class CarBuySerializer(serializers.Serializer):
     @transaction.atomic
     def create(self, validated_data):
         try:
-            car = CarStock.objects.filter(car__name__iexact=validated_data['name'],
-                                          total__gt=F('total_sold')).order_by('date')
+            car = CarStock.objects.select_for_update().filter(car__name__iexact=validated_data['name'],
+                                                              total__gt=F('total_sold')).order_by('date').first()
         except CarStock.DoesNotExist as e:
-            raise CustomException(detail='There is no {} for sale.'.format(validated_data['name']))
-        if car:
-            car = car[0]
-        else:
             raise CustomException(detail='There is no {} for sale.'.format(validated_data['name']))
         if car.total - car.total_sold < validated_data['count']:
             raise CustomException(detail='There is not enough car left for sale.')

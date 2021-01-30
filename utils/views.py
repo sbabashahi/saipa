@@ -11,16 +11,15 @@ import jdatetime
 from car.models import Car, CarStock
 from utils import responses
 from utils.serializers import FileSerializer
-from utils.permissions import SuperUserPermission
 
 
 @decorators.authentication_classes([JSONWebTokenAuthentication])
-@decorators.permission_classes([IsAuthenticated, SuperUserPermission])
-class FileCreateView(generics.CreateAPIView):
+@decorators.permission_classes([IsAuthenticated])
+class CreateTestDataExcelView(generics.CreateAPIView):
     """
     post:
 
-        File uploader
+        Upload excel to create data test
 
         file
     """
@@ -34,12 +33,15 @@ class FileCreateView(generics.CreateAPIView):
             xl = pd.ExcelFile(file)
             df = xl.parse(xl.sheet_names[0])
             for index, row in df.iterrows():
-                date = datetime.strptime(row['تاریخ انتشار'], '%d/%m/%Y')
+                if isinstance(row['date'], str):
+                    date = datetime.strptime(row['date'], '%d/%m/%Y')
+                else:
+                    date = row['date']
                 if date.year < 1900:
                     date = jdatetime.date(day=date.day, month=date.month, year=date.year).togregorian()
-                name = row['نام ماشین']
-                price = row['قیمت']
-                total = row['تعداد']
+                name = row['name']
+                price = row['price']
+                total = row['total']
                 try:
                     car = Car.objects.get(name=name)
                 except Car.DoesNotExist as e:

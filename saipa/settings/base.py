@@ -8,15 +8,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'o)m0t^9%90)5$xv1&8y2p%b(@9w3+l26%=bknb)bk-d%q$08u8'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -28,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # second party app
     'rest_framework',
+    'drf_yasg',
     # our app
     'authnz',
     'car',
@@ -48,7 +40,7 @@ ROOT_URLCONF = 'saipa.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, '../../templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -74,7 +66,7 @@ DATABASES = {
         'NAME': 'saipa',
         'USER': 'saipa',
         'PASSWORD': 'saipapass',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',

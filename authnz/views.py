@@ -41,7 +41,7 @@ class RegisterView(generics.CreateAPIView):
                 user = transactions.register_user(username, password)
                 payload = jwt_payload_handler(user)  # todo: Is deprecated
                 jwt_token = utils.jwt_response_payload_handler(jwt_encode_handler(payload))
-                return responses.SuccessResponse(jwt_token).send()
+                return responses.SuccessResponse(jwt_token, status=201).send()
         except util_exception.CustomException as e:
             return responses.ErrorResponse(message=e.detail, status=e.status_code).send()
         except exceptions.ValidationError as e:
